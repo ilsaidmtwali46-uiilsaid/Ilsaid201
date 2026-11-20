@@ -270,6 +270,7 @@ Screens.gallery = {
       ? `<img id="fsZoomImg" src="${p.img}" alt="${DB.esc(p.name)}">`
       : `<div id="fsZoomImg" class="gal-fs-noimg">📦<br>${DB.esc(p.name)}</div>`;
 
-    this.applyZoom();
+    // ننتظر إطار واحد حتى يتم بناء الصورة في DOM ثم نطبق التكبير
+    requestAnimationFrame(() => this.applyZoom());
   }
 };
