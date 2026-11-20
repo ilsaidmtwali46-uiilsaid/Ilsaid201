@@ -246,4 +246,41 @@ const DB = {
     total = this.round(total);
     this.save('products', prods);
     this.addCash(received);
-    if (supplierId) this.addBalance('suppliers', supplierId, -(total
+    if (supplierId) this.addBalance('suppliers', supplierId, -(total - received));
+    const a = this.list('purchases');
+    const r = Object.assign({
+      id:this.newId('pret'), date:new Date().toISOString(),
+      isReturn:true, supplierId:supplierId||null, items:lines,
+      total, received:Number(received)||0
+    }, meta || {});
+    a.push(r); this.save('purchases', a);
+    return { purchase: r };
+  },
+
+  getTheme(){ return this.get(this.K.theme, { name:'sage' }); },
+  setTheme(t){ this.set(this.K.theme, t); },
+
+  compressImage(file, max=360, quality=0.7){
+    return new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onerror = reject;
+      fr.onload = () => {
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          const r = Math.min(1, max / Math.max(img.width, img.height));
+          const c = document.createElement('canvas');
+          c.width = Math.round(img.width * r);
+          c.height = Math.round(img.height * r);
+          const x = c.getContext('2d');
+          x.fillStyle = '#fff';
+          x.fillRect(0, 0, c.width, c.height);
+          x.drawImage(img, 0, 0, c.width, c.height);
+          resolve(c.toDataURL('image/jpeg', quality));
+        };
+        img.src = fr.result;
+      };
+      fr.readAsDataURL(file);
+    });
+  }
+};
