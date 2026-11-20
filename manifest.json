@@ -1,6 +1,6 @@
 {
-  "name": " ",
-  "short_name": " ",
+  "name": "تطبيق البقالة والمحاسبة",
+  "short_name": "البقالة",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait-primary",
