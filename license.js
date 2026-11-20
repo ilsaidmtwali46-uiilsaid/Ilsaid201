@@ -1,5 +1,5 @@
 const License = {
-  PUBLIC_KEY:{"kty":"EC","crv":"P-256","x":"JPiLhZfTREyfi47bilILNM50L24xGA88AgLPLot2z0M","y":"aL9Mqq68V-Mw0TBPCg0zg3QgTusGky_yFEsdv2v3WhA"}
+  PUBLIC_KEY:{"kty":"EC","crv":"P-256","x":"JPiLhZfTREyfi47bilILNM50L24xGA88AgLPLot2z0M","y":"aL9Mqq68V-Mw0TBPCg0zg3QgTusGky_yFEsdv2v3WhA"},
   info: null,
 
   dec(s){
@@ -40,14 +40,16 @@ const License = {
     if (!info) return false;
 
     if (info.renew){
-      let prev = null;
-      try {
-        const raw = localStorage.getItem(DB.K.license);
-        if (raw){
-          const p0 = raw.split('.')[0];
-          prev = JSON.parse(new TextDecoder().decode(this.dec(p0)));
-        }
-      } catch(_){}
+      let prev = this.info || null;
+      if (!prev){
+        try {
+          const raw = localStorage.getItem(DB.K.license);
+          if (raw){
+            const p0 = raw.split('.')[0];
+            prev = JSON.parse(new TextDecoder().decode(this.dec(p0)));
+          }
+        } catch(_){}
+      }
       if (prev){
         if (!info.s && prev.s) info.s = prev.s;
         if (!info.b && prev.b) info.b = prev.b;
@@ -66,7 +68,7 @@ const License = {
     const el = document.getElementById('title');
     if (!el) return;
     if (!this.info){
-      el.innerHTML = '<span class="scroll-main-title">اسم النشاط</span>';
+      el.innerHTML = '<div class="scroll-main-title">اسم النشاط</div>';
       return;
     }
     const activityName = this.info.b || this.info.s || 'اسم النشاط';
