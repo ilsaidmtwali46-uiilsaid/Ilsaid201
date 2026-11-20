@@ -52,11 +52,13 @@ Screens.purchases = {
       else if (a === 'sup') this.pickSupplier();
       else if (a === 'save') this.save();
     };
+    // نزيل الاعتماد على oninput للـ cart بالكامل لتجنب إعادة الرسم
     cart.oninput = e => {
       const t = e.target;
-      if (t.id === 'paid') this.paid = t.value === '' ? null : (parseFloat(t.value) || 0);
-      else if (t.dataset.f) this.cart[t.dataset.id][t.dataset.f] = parseFloat(t.value) || 0;
-      this.drawTotals();
+      if (t.dataset.f) {
+        this.cart[t.dataset.id][t.dataset.f] = parseFloat(t.value) || 0;
+        this.drawTotals();
+      }
     };
     this.drawGrid();
     this.drawCart();
@@ -92,24 +94,35 @@ Screens.purchases = {
           <div><label>سعر الواحد</label><input class="inp" type="number" inputmode="decimal" step="any" data-id="${id}" data-f="cost" value="${c.cost}"></div>
         </div></div>`;
     }).join('');
+    
     const cart = this.$('cart');
     cart.className = 'cart' + (r ? ' ret' : '');
+    const paidVal = this.paid === null ? '' : this.paid;
+    
     cart.innerHTML = `<h2>${r ? '↩️ مرتجع شراء' : '📥 فاتورة شراء'}</h2>
       ${rows || '<p class="big">اضغط على صورة الصنف لإضافته</p>'}
       <div class="total" id="tot"></div>
       <button class="btn gray" data-act="sup" id="supBtn">🚚 ${DB.esc(this.supName())}</button>
       ${s ? `<p class="big" style="font-size:.95rem">📞 ${DB.esc(s.phone || '—')} | 📍 ${DB.esc(s.address || '—')}</p>` : ''}
       <label>${r ? 'المبلغ المستلم من المورد' : 'المبلغ المدفوع الآن'}</label>
-      <input class="inp" id="paid" type="number" inputmode="decimal" step="any">
+      <input class="inp" id="paid" type="number" inputmode="decimal" step="any" value="${paidVal}">
       <div class="big" id="rem"></div>
       <button class="btn ${r ? 'warn' : 'ok'}" data-act="save">✅ ${r ? 'حفظ المرتجع' : 'حفظ الشراء'}</button>`;
+
+    // نربط الحقل مرة واحدة هنا لتجنب إعادة الرسم
+    this.$('paid').oninput = e => {
+      this.paid = e.target.value === '' ? null : (parseFloat(e.target.value) || 0);
+      this.drawTotals();
+    };
+
     this.drawTotals();
   },
 
   drawTotals(){
     const t = this.total(), paid = this.paid === null ? t : this.paid, rem = DB.round(t - paid);
     this.$('tot').textContent = DB.money(t);
-    if (this.paid === null) this.$('paid').value = t || '';
+    const pi = this.$('paid');
+    if (this.paid === null && pi && pi.value === '') pi.value = t || '';
     this.$('rem').textContent = (this.ret ? 'يُخصم من حساب المورد: ' : 'الباقي للمورد: ') + DB.money(rem);
   },
 
